@@ -175,7 +175,6 @@ def main():
     игровой процесс,
     завершение.
     """
-
     # Экземпляры классов.
     snake = Snake()
     apple = Apple()
@@ -216,7 +215,7 @@ def main():
 
         # Формируем заголовок с динамической информацией
         useful_information = (
-            f'Змейка | Длина: {snake.length} | Рекорд: {max_length} '
+            f'Змейка | Длина: {snake.length} | Рекорд: {max_length}'
             f'| Скорость: {SPEED} FPS | Выход: закрыть окно или  ESCAPE'
         )
         pg.display.set_caption(useful_information)
