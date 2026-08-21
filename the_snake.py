@@ -1,5 +1,6 @@
-from random import choice
 import pygame as pg
+from random import choice
+
 
 # Константы для размеров поля и сетки:
 SCREEN_WIDTH, SCREEN_HEIGHT = 640, 480
@@ -20,6 +21,7 @@ UP = (0, -1)
 DOWN = (0, 1)
 LEFT = (-1, 0)
 RIGHT = (1, 0)
+
 OPPOSITE = {
     UP: DOWN,
     DOWN: UP,
@@ -52,10 +54,8 @@ SPEED = 10
 pg.init()
 # Настройка игрового окна:
 screen = pg.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT), 0, 32)
-
 # Заголовок окна игрового поля:
 pg.display.set_caption('Змейка')
-
 # Настройка времени:
 clock = pg.time.Clock()
 
