@@ -105,7 +105,7 @@ class GameObject:
     def draw(self):
         """Базовый метод отрисовки объекта."""
         raise NotImplementedError(
-            f'Метод draw() не реализован в классе {type(self)}.'
+            f'Метод draw() не реализован в классе {type(self)}.\n'
             'Реализуйте его в наследнике для корректной отрисовки.'
         )
 
