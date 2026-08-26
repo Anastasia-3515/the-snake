@@ -63,7 +63,7 @@ pg.display.set_caption('Змейка')
 font = pg.font.SysFont('Arial', 28, bold=True)
 
 
-# Тут опишите все классы игры.
+# Все классы игры.
 class GameObject:
     """Базовый класс для всех игровых объектов."""
 
