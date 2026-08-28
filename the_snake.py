@@ -90,8 +90,10 @@ class GameObject:
 
     def draw(self):
         """Базовый метод отрисовки объекта."""
+        # Без переменной не проходит проверку на платформе
+        obj_type = type(self)
         raise NotImplementedError(
-            f'Метод draw() не реализован в классе {type(self)}.'
+            f'Метод draw() не реализован в классе {obj_type}.'
         )
 
 
@@ -153,7 +155,7 @@ class Snake(GameObject):
     def move(self) -> None:
         """Отвечает за движение змеи."""
         # Если змейка не выросла, удаляем хвост
-        if len(self.positions) > 0:
+        if len(self.positions) == self.length:
             self.last_tail = self.positions[-1]
         else:
             self.last_tail = None
