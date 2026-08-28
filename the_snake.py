@@ -136,33 +136,24 @@ class Snake(GameObject):
         if new_direction != OPPOSITE.get(self.direction):
             self.direction = new_direction
 
-    def get_next_head_position(self) -> tuple[int, int]:
-        """Вычисляет новую позицию головы и обновляет список."""
+    def move(self) -> None:
+        """
+        Вычисляет новую позицию головы и обновляет список.
+        Отвечает за движение змеи.
+        """
         head_x, head_y = self.get_head_position()
         dx, dy = self.direction
-        return (
+        new_head = (
             (head_x + dx * GRID_SIZE) % SCREEN_WIDTH,
             (head_y + dy * GRID_SIZE) % SCREEN_HEIGHT
         )
-
-    def move(self, apple_position) -> bool:
-        """Отвечает за движение змеи."""
-        new_head = self.get_next_head_position()
         # Если змейка не выросла, удаляем хвост
         self.last_tail = (
-            self.positions[-1]
+            self.positions.pop()
             if len(self.positions) == self.length
             else None
         )
-        ate_apple = (new_head == apple_position)
-        self.positions.insert(0, self.get_next_head_position())
-        if ate_apple:
-            self.length += 1
-            self.grew_tail = True
-        else:
-            self.positions.pop()
-            self.grew_tail = False
-        return ate_apple
+        self.positions.insert(0, new_head)
 
     def check_self_collision(self) -> bool:
         """Проверяем не врезалась ли змея сама в себя."""
@@ -174,13 +165,14 @@ class Snake(GameObject):
         self.positions = [CENTER_GRID]
         self.direction = RIGHT
         self.last_tail = None
-        self.grew_tail = False
 
     def draw(self) -> None:
         """Рисует змею."""
+        if self.last_tail:
+            x, y = self.last_tail
+            rect = pg.Rect(x, y, GRID_SIZE, GRID_SIZE)
+            pg.draw.rect(screen, BOARD_BACKGROUND_COLOR, rect)
         self.draw_single_grid(self.get_head_position())
-        for pos in self.positions[1:]:
-            self.draw_single_grid(pos)
 
 
 def handle_keys(snake) -> None:
@@ -212,17 +204,15 @@ def main() -> None:
 
     while True:
         handle_keys(snake)
-        ate_apple = snake.move(apple.position)
-        if ate_apple:
+        snake.move()
+        if snake.get_head_position() == apple.position:
+            snake.length += 1
             apple.randomize_position(snake.positions)
-        else:
-            snake.check_self_collision()
-        max_length = max(max_length, snake.length)
-        if snake.check_self_collision():
+            max_length = max(max_length, snake.length)
+        elif snake.check_self_collision():
             snake.reset()
-            apple.randomize_position(snake.positions)
             screen.fill(BOARD_BACKGROUND_COLOR)
-        screen.fill(BOARD_BACKGROUND_COLOR)
+            apple.randomize_position(snake.positions)
         snake.draw()
         apple.draw()
 
@@ -230,9 +220,9 @@ def main() -> None:
             f'Змейка | Длина: {snake.length} | '
             f'Рекорд: {max_length} | Выход: ESCAPE'
         )
+        clock.tick(SPEED)
         pg.display.set_caption(caption)
         pg.display.update()
-        clock.tick(SPEED)
 
 
 if __name__ == '__main__':
