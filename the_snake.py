@@ -72,20 +72,19 @@ class GameObject:
         body_color: tuple[int, int, int] | None = None
     ) -> None:
         self.position = position
-        self.body_color = body_color if body_color else DEFAULT_COLOR
+        self.body_color = body_color or DEFAULT_COLOR
 
     def draw_single_grid(
         self,
         pos: tuple[int, int],
         color: tuple[int, int, int] | None = None,
-        is_head_or_tail: bool = False
     ) -> None:
         """Отрисовывает одну ячейку (квадрат) на экране."""
         x, y = pos
         rect = pg.Rect(x, y, GRID_SIZE, GRID_SIZE)
         final_color = color or self.body_color
         pg.draw.rect(screen, final_color, rect)
-        if final_color != BORDER_COLOR and is_head_or_tail:
+        if final_color != BORDER_COLOR:
             pg.draw.rect(screen, BORDER_COLOR, rect, 1)
 
     def draw(self):
@@ -118,11 +117,7 @@ class Apple(GameObject):
     # Метод draw класса Apple
     def draw(self) -> None:
         """Рисует яблоко на экране."""
-        self.draw_single_grid(
-            self.position,
-            APPLE_COLOR,
-            is_head_or_tail=True
-        )
+        self.draw_single_grid(self.position)
 
 
 class Snake(GameObject):
@@ -130,8 +125,6 @@ class Snake(GameObject):
 
     def __init__(self, body_color: tuple[int, int, int] = SNAKE_COLOR) -> None:
         super().__init__(body_color=body_color)
-        self.last_tail = None
-        self.grew_tail: bool = False
         self.reset()
 
     def get_head_position(self) -> tuple[int, int]:
@@ -152,18 +145,24 @@ class Snake(GameObject):
             (head_y + dy * GRID_SIZE) % SCREEN_HEIGHT
         )
 
-    def move(self) -> None:
+    def move(self, apple_position) -> bool:
         """Отвечает за движение змеи."""
+        new_head = self.get_next_head_position()
         # Если змейка не выросла, удаляем хвост
-        if len(self.positions) == self.length:
-            self.last_tail = self.positions[-1]
-        else:
-            self.last_tail = None
+        self.last_tail = (
+            self.positions[-1]
+            if len(self.positions) == self.length
+            else None
+        )
+        ate_apple = (new_head == apple_position)
         self.positions.insert(0, self.get_next_head_position())
-        if not self.grew_tail:
-            self.positions.pop()
-        else:
+        if ate_apple:
             self.length += 1
+            self.grew_tail = True
+        else:
+            self.positions.pop()
+            self.grew_tail = False
+        return ate_apple
 
     def check_self_collision(self) -> bool:
         """Проверяем не врезалась ли змея сама в себя."""
@@ -179,17 +178,9 @@ class Snake(GameObject):
 
     def draw(self) -> None:
         """Рисует змею."""
-        if not self.grew_tail and self.last_tail is not None:
-            self.draw_single_grid(
-                self.last_tail,
-                BOARD_BACKGROUND_COLOR,
-                is_head_or_tail=False
-            )
-        self.draw_single_grid(
-            self.get_head_position(),
-            SNAKE_COLOR,
-            is_head_or_tail=True
-        )
+        self.draw_single_grid(self.get_head_position())
+        for pos in self.positions[1:]:
+            self.draw_single_grid(pos)
 
 
 def handle_keys(snake) -> None:
@@ -221,17 +212,17 @@ def main() -> None:
 
     while True:
         handle_keys(snake)
-        if snake.get_next_head_position() == apple.position:
-            snake.grew_tail = True
+        ate_apple = snake.move(apple.position)
+        if ate_apple:
             apple.randomize_position(snake.positions)
         else:
-            snake.grew_tail = False
-        snake.move()
+            snake.check_self_collision()
         max_length = max(max_length, snake.length)
         if snake.check_self_collision():
             snake.reset()
             apple.randomize_position(snake.positions)
             screen.fill(BOARD_BACKGROUND_COLOR)
+        screen.fill(BOARD_BACKGROUND_COLOR)
         snake.draw()
         apple.draw()
 
